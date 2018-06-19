@@ -1,3 +1,9 @@
+'''
+@author: John Henry Dahlberg
+
+2018-06-19
+'''
+
 import sklearn.preprocessing
 from numpy import *
 from copy import *
@@ -21,16 +27,31 @@ class RecurrentNeuralNetwork(object):
         self.x0 = '.'
         self.h0 = zeros((self.nHiddenNeurons, 1))
 
-        # Weight initialization
-        self.W = self.sigma*random.randn(self.nHiddenNeurons, self.nHiddenNeurons)
-        self.V = self.sigma*random.randn(self.K, self.nHiddenNeurons)
-        self.U = self.sigma*random.randn(self.nHiddenNeurons, self.K)
-        self.b = zeros((self.nHiddenNeurons, 1))
-        self.c = zeros((self.K, 1))
-
         self.weights = ['W', 'V', 'U', 'b', 'c']
         self.gradients = ['dLdW', 'dLdV', 'dLdU', 'dLdB', 'dLdC']
         self.numGradients = ['gradWnum', 'gradVnum', 'gradUnum', 'gradBnum', 'gradCnum']
+
+        self.sizes = [(self.nHiddenNeurons, self.nHiddenNeurons), (self.K, self.nHiddenNeurons), \
+                      (self.nHiddenNeurons, self.K), (self.nHiddenNeurons, 1), (self.K, 1)]
+
+        # Weight initialization
+        for weight, gradIndex in zip(self.weights, range(len(self.gradients))):
+            if self.sizes[gradIndex][1] > 1:
+                if self.weightInit == 'He':
+                    self.initSigma = sqrt(2 / sum(self.sizes[gradIndex]))
+                else:
+                    self.initSigma = 0.01
+                setattr(self, weight, self.initSigma*random.randn(self.sizes[gradIndex][0], self.sizes[gradIndex][1]))
+            else:
+                setattr(self, weight, zeros(self.sizes[gradIndex]))
+
+        '''
+        for weight in self.weights[:3]:
+            setattr(self, weight, array(loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)))
+        for weight in self.weights[3:]:
+            setattr(self, weight, array([loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)]).T)
+        '''
+
 
     def loadCharacters(self):
         with open(self.textFile, 'r') as f:
@@ -56,7 +77,7 @@ class RecurrentNeuralNetwork(object):
         y = self.seqToOneHot(yChars)
         hPrev = deepcopy(self.h0)
 
-        p, h, a = self.forwardPass(xChars, hPrev)
+        p, h, a = self.forwardPass(x, hPrev)
         self.backProp(x, y, p, h, a)
 
         smoothLoss = self.computeCost(p, y)
@@ -68,8 +89,9 @@ class RecurrentNeuralNetwork(object):
             fig = plt.figure()
             constants = 'Max Epochs: ' + str(self.nEpochs) \
                         + '\n# Hidden neurons: ' + str(self.nHiddenNeurons) \
+                        + '\nWeight initialization: ' + str(self.weightInit) \
+                        + '\n' + r'$\sigma$ = ' + "{:.2e}".format(self.initSigma) \
                         + '\n' + r'$\eta$ = ' + "{:.2e}".format(self.eta) \
-                        + '\n' + r'$\sigma$ = ' + "{:.2e}".format(self.sigma) \
                         + '\n' + 'Sequence length: ' + str(self.seqLength) \
                         + '\n' + '# training characters in text:' + '\n' + str(len(self.bookData)) \
                         + '\n' + 'AdaGrad: ' + str(self.adaGradSGD) \
@@ -77,6 +99,8 @@ class RecurrentNeuralNetwork(object):
 
             if self.rmsProp:
                 constants += '\n' + r'$\gamma$ = ' + "{:.2e}".format(self.gamma) \
+
+
 
         m = []
         for grad in self.gradients:
@@ -87,7 +111,7 @@ class RecurrentNeuralNetwork(object):
 
         for epoch in range(0, self.nEpochs):
 
-            hprev = deepcopy(self.h0)
+            hPrev = deepcopy(self.h0)
 
             for e in range(0, len(self.bookData)-self.seqLength-1, self.seqLength):
                 xChars = self.bookData[e:e+self.seqLength]
@@ -95,7 +119,7 @@ class RecurrentNeuralNetwork(object):
                 x = self.seqToOneHot(xChars)
                 y = self.seqToOneHot(yChars)
 
-                p, h, a = self.forwardPass(xChars, hPrev)
+                p, h, a = self.forwardPass(x, hPrev)
                 hPrev = deepcopy(h[-1])
 
                 loss = self.computeCost(p, y)
@@ -131,11 +155,14 @@ class RecurrentNeuralNetwork(object):
 
                     if smoothLoss < lowestSmoothLoss:
                         lowestSmoothLoss = copy(smoothLoss)
-                        x0 = self.bookData[e]
-                        bestSequence = self.synthesizeText(x0, hPrev, self.lengthSynthesizedTextBest)
-
+                        '''
+                        
                         for weight in self.weights:
                             savetxt(str(weight) + '.txt', getattr(self, weight), delimiter=',')
+
+                        savetxt('seqIterations.txt', seqIterations, delimiter=',')
+                        savetxt('smoothLosses.txt', smoothLosses, delimiter=',')
+                        '''
 
                     if self.plotProcess:
                         plt.clf()
@@ -153,6 +180,18 @@ class RecurrentNeuralNetwork(object):
 
                 seqIteration += 1
 
+            bestWeights = []
+
+            for weight in self.weights[:3]:
+                bestWeights.append(array(loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)))
+            for weight in self.weights[3:]:
+                bestWeights.append(array([loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)]).T)
+
+            weightsTuples = [(self.weights[i], bestWeights[i]) for i in range(len(self.weights))]
+
+            weights = dict(weightsTuples)
+            bestSequence = self.synthesizeText(x0, hPrev, self.lengthSynthesizedTextBest, weights)
+
             print('\n\nEpoch: ' + str(epoch) + ', Lowest smooth loss: ' + str(lowestSmoothLoss))
             print('    ' + bestSequence)
 
@@ -167,21 +206,24 @@ class RecurrentNeuralNetwork(object):
         a = []
         p = []
         for t in range(0, tau):
-            xt = array([self.charToInd.get(x[t])]).T
-            a.append(dot(weights['W'], h[t]) + dot(weights['U'], xt) + weights['b'])
+            a.append(dot(weights['W'], h[t]) + dot(weights['U'], x[t]) + weights['b'])
             h.append(self.tanh(a[t]))
             o = dot(weights['V'], h[t+1]) + weights['c']
             p.append(self.softmax(o))
 
         return p, h, a
 
-    def synthesizeText(self, x0, hPrev, seqLength):
+    def synthesizeText(self, x0, hPrev, seqLength, weights={}):
+        if not weights:
+            weightsTuples = [(self.weights[i], getattr(self, self.weights[i])) for i in range(len(self.weights))]
+            weights = dict(weightsTuples)
 
         xNew = []
-
         xNext = x0
+
         for t in range(0, seqLength):
-            p, h, a = self.forwardPass(xNext, hPrev)
+            x = [array([self.charToInd.get(xNext)]).T]
+            p, h, a = self.forwardPass(x, hPrev, weights)
             hPrev = deepcopy(h[-1])
 
             cp = cumsum(p[-1])
@@ -209,15 +251,14 @@ class RecurrentNeuralNetwork(object):
             self.dLdV += dot(dLdO[t].T, h[t+1].T)
             self.dLdC += dLdO[t].T
 
-        dLdH = [dot(dLdO[-1], self.V)]
-        dLdA = [dot(dLdH[-1], diag(1 - tanh(a[-1][:, 0])**2))]
+        dLdH = [zeros((1, self.nHiddenNeurons))]*tau
+        dLdA = [zeros((1, self.nHiddenNeurons))]*tau
+        dLdH[-1] = dot(dLdO[-1], self.V)
+        dLdA[-1] = dot(dLdH[-1], diag(1 - self.tanh(a[t-1][:, 0])**2))
 
         for t in range(tau - 2, -1, -1):
-            dLdH.append(dot(dLdO[t], self.V) + dot(dLdA[tau - 2 - t], self.W))
-            dLdA.append(dot(dLdH[tau - 1 - t], diag(1 - tanh(a[t][:, 0])**2)))
-
-        dLdH.reverse()
-        dLdA.reverse()
+            dLdH[t] = dot(dLdO[t], self.V) + dot(dLdA[t+1], self.W)
+            dLdA[t] = dot(dLdH[t], diag(1 - self.tanh(a[t][:, 0])**2))
 
         for t in range(tau):
             self.dLdW += dot(dLdA[t].T, h[t].T)
@@ -230,9 +271,9 @@ class RecurrentNeuralNetwork(object):
 
 
     def computeCost(self, p, y):
+        # Cross entropy loss
 
         tau = len(y)
-        #   loss = crossEntropy
         loss = 0
         for t in range(tau):
             loss -= sum(log(dot(y[t].T, p[t])))
@@ -271,11 +312,8 @@ class RecurrentNeuralNetwork(object):
 
         return p
 
-    def computeGradsNumSlow(self, xChars, y):
-
-        x = self.seqToOneHot(xChars)
-
-        h = 1e-4
+    def computeGradsNumSlow(self, x, y, hPrev):
+        hStep = 1e-4
 
         for numGrad, weight in zip(self.numGradients, self.weights):
             setattr(self, numGrad, zeros(getattr(self, weight).shape))
@@ -284,23 +322,23 @@ class RecurrentNeuralNetwork(object):
             if getattr(self, grad).shape[1] == 1:
                 for i in range(getattr(self, grad).shape[0]):
                     gradTry = deepcopy(getattr(self, grad))
-                    gradTry[i, 0] -= h
+                    gradTry[i, 0] -= hStep
                     weightsTuples = [(self.weights[i], deepcopy(getattr(self, self.weights[i]))) for i in range(len(self.weights))]
                     weightsTuples[gradIndex] = (self.weights[gradIndex], gradTry)
                     weights = dict(weightsTuples)
-                    p, h, a = self.forwardPass(xChars, weights)
-                    c1 = self.computeCost(p, y, weights)
+                    p, h, a = self.forwardPass(x, hPrev, weights)
+                    c1 = self.computeCost(p, y)
 
                     gradTry = deepcopy(getattr(self, grad))
-                    gradTry[i, 0] += h
+                    gradTry[i, 0] += hStep
                     weightsTuples = [(self.weights[i], deepcopy(getattr(self, self.weights[i]))) for i in range(len(self.weights))]
                     weightsTuples[gradIndex] = (self.weights[gradIndex], gradTry)
                     weights = dict(weightsTuples)
-                    p, h, a = self.forwardPass(xChars, weights)
-                    c2 = self.computeCost(p, y, weights)
+                    p, h, a = self.forwardPass(x, hPrev, weights)
+                    c2 = self.computeCost(p, y)
 
                     updatedNumGrad = deepcopy(getattr(self, numGrad))
-                    updatedNumGrad[i, 0] = (c2 - c1) / (2 * h)
+                    updatedNumGrad[i, 0] = (c2 - c1) / (2 * hStep)
                     setattr(self, numGrad, updatedNumGrad)
             else:
                 iS = [0, 1, 2, getattr(self, grad).shape[0] - 3, getattr(self, grad).shape[0] - 2, getattr(self, grad).shape[0] - 1]
@@ -308,42 +346,43 @@ class RecurrentNeuralNetwork(object):
                 for i in iS:  # range(self.W[layer].shape[0]):
                     for j in jS:  # range(self.W[layer].shape[1]):
                         gradTry = deepcopy(getattr(self, grad))
-                        gradTry[i, j] -= h
-                        weightsTuples = [(self.weights[i], copy(getattr(self, self.weights[i]))) for i in
+                        gradTry[i, j] -= hStep
+                        weightsTuples = [(self.weights[i], deepcopy(getattr(self, self.weights[i]))) for i in
                                          range(len(self.weights))]
                         weightsTuples[gradIndex] = (self.weights[gradIndex], gradTry)
                         weights = dict(weightsTuples)
-                        p, h, a = self.forwardPass(xChars, weights)
-                        c1 = self.computeCost(p, y, weights)
+                        p, h, a = self.forwardPass(x, hPrev, weights)
+                        c1 = self.computeCost(p, y)
 
                         gradTry = deepcopy(getattr(self, grad))
-                        gradTry[i, j] += h
+                        gradTry[i, j] += hStep
                         weightsTuples = [(self.weights[i], copy(getattr(self, self.weights[i]))) for i in
                                          range(len(self.weights))]
                         weightsTuples[gradIndex] = (self.weights[gradIndex], gradTry)
                         weights = dict(weightsTuples)
-                        p, h, a = self.forwardPass(xChars, weights)
-                        c2 = self.computeCost(p, y, weights)
+                        p, h, a = self.forwardPass(x, hPrev, weights)
+                        c2 = self.computeCost(p, y)
 
                         updatedNumGrad = deepcopy(getattr(self, numGrad))
-                        updatedNumGrad[i, j] = (c2 - c1) / (2 * h)
+                        updatedNumGrad[i, j] = (c2 - c1) / (2 * hStep)
                         setattr(self, numGrad, updatedNumGrad)
 
     def testComputedGradients(self):
-        xChars = self.bookData[:3]
-        yChars = self.bookData[1:4]
+
+        xChars = self.bookData[:self.seqLength]
+        yChars = self.bookData[1:self.seqLength+1]
         x = self.seqToOneHot(xChars)
         y = self.seqToOneHot(yChars)
-        Y = self.seqToOneHotMatrix(yChars)
 
         epsilon = 1e-20
-        self.h = h0
-        p, h, a = self.forwardPass(xChars)
+        hPrev = self.h0
+        p, h, a = self.forwardPass(x, hPrev)
         self.backProp(x, y, p, h, a)
 
         differenceGradients = []
         differenceGradientsSmall = []
-        self.computeGradsNumSlow(xChars, y)
+        self.computeGradsNumSlow(x, y, hPrev)
+
         for numGrad, grad, gradIndex in zip(self.numGradients, self.gradients, range(len(self.numGradients))):
             gradObj = deepcopy(getattr(self, grad))
             numGradObj = deepcopy(getattr(self, numGrad))
@@ -391,22 +430,22 @@ def main():
     attributes = {
         'textFile': 'LordOfTheRings.txt',
         'adaGradSGD': True,
-        'eta': 0.1,
-        'sigma': 0.01,
+        'weightInit': 'He',
+        'eta': .1,
         'nHiddenNeurons': 100,
         'seqLength': 25,
         'lengthSynthesizedText': 200,
         'lengthSynthesizedTextBest': 1000,
         'rmsProp': False,
         'gamma': 0.9,
-        'nEpochs': 10,
+        'nEpochs': 30,
         'plotProcess': True
     }
 
     rnn = RecurrentNeuralNetwork(attributes)
+    rnn.testComputedGradients()
     rnn.adaGrad()
-    #rnn.testComputedGradients()
 
 if __name__ == '__main__':
-    random.seed(0)
+    random.seed(1)
     main()
