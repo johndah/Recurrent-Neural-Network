@@ -145,8 +145,8 @@ class RecurrentNeuralNetwork(object):
 
                                 savetxt('seqIterations.txt', seqIterations, delimiter=',')
                                 savetxt('smoothLosses.txt', smoothLosses, delimiter=',')
-                            except:
-                                pass
+                            except Exception as e: 
+                                print(e)
 
                     if self.plotProcess:
                         plt.clf()
