@@ -41,13 +41,21 @@ class RecurrentNeuralNetwork(object):
         # Weight initialization
         for weight, gradIndex in zip(self.weights, range(len(self.gradients))):
             if self.sizes[gradIndex][1] > 1:
-                if self.weightInit == 'He':
-                    self.initSigma = sqrt(2 / sum(self.sizes[gradIndex]))
+                if self.weightInit == 'Load':
+                    self.initSigma = loadtxt('initSigma.txt', unpack=False)
+                    setattr(self, weight, array(loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)))
                 else:
-                    self.initSigma = 0.01
-                setattr(self, weight, self.initSigma*random.randn(self.sizes[gradIndex][0], self.sizes[gradIndex][1]))
+                    if self.weightInit == 'He':
+                        self.initSigma = sqrt(2 / sum(self.sizes[gradIndex]))
+                    else:
+                        self.initSigma = 0.01
+                    setattr(self, weight, self.initSigma*random.randn(self.sizes[gradIndex][0], self.sizes[gradIndex][1]))
             else:
-                setattr(self, weight, zeros(self.sizes[gradIndex]))
+                if self.weightInit == 'Load':
+                    self.initSigma = loadtxt('initSigma.txt', unpack=False)
+                    setattr(self, weight, array([loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)]).T)
+                else:
+                    setattr(self, weight, zeros(self.sizes[gradIndex]))
 
         self.lossMomentum = 1e-3
 
@@ -83,7 +91,7 @@ class RecurrentNeuralNetwork(object):
 
         if self.plotProcess:
             fig = plt.figure()
-            constants = 'Max Epochs: ' + str(self.nEpochs) + ' (' + str(round(1772039/39 * self.nEpochs)) + ' seq. iter.)' \
+            constants = 'Max Epochs: ' + str(self.nEpochs) + ' (' + str(len(self.bookData)/self.seqLength * self.nEpochs) + ' seq. iter.)' \
                         + '\n# Hidden neurons: ' + str(self.nHiddenNeurons) \
                         + '\nWeight initialization: ' + str(self.weightInit) \
                         + '\n' + r'$\sigma$ = ' + "{:.2e}".format(self.initSigma) \
@@ -121,6 +129,7 @@ class RecurrentNeuralNetwork(object):
                 if not smoothLoss:
                     smoothLoss = loss
                     lowestSmoothLoss = copy(smoothLoss)
+
                 smoothLoss = (1 - self.lossMomentum) * smoothLoss + self.lossMomentum * loss
 
                 if e % (self.seqLength*3e2) == 0:
@@ -143,9 +152,10 @@ class RecurrentNeuralNetwork(object):
                                 for weight in self.weights:
                                     savetxt(weight + '.txt', getattr(self, weight), delimiter=',')
 
+                                savetxt('initSigma.txt', array([[self.initSigma]]))
                                 savetxt('seqIterations.txt', seqIterations, delimiter=',')
                                 savetxt('smoothLosses.txt', smoothLosses, delimiter=',')
-                            except Exception as e: 
+                            except Exception as e:
                                 print(e)
 
                     if self.plotProcess:
@@ -184,19 +194,20 @@ class RecurrentNeuralNetwork(object):
 
                 seqIteration += 1
 
-            bestWeights = []
+            if self.saveParameters:
+                bestWeights = []
 
-            for weight in self.weights[:3]:
-                bestWeights.append(array(loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)))
-            for weight in self.weights[3:]:
-                bestWeights.append(array([loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)]).T)
+                for weight in self.weights[:3]:
+                    bestWeights.append(array(loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)))
+                for weight in self.weights[3:]:
+                    bestWeights.append(array([loadtxt(weight + ".txt", comments="#", delimiter=",", unpack=False)]).T)
 
-            weightsTuples = [(self.weights[i], bestWeights[i]) for i in range(len(self.weights))]
+                weightsTuples = [(self.weights[i], bestWeights[i]) for i in range(len(self.weights))]
 
-            weights = dict(weightsTuples)
-            bestSequence = self.synthesizeText(x0Best, hPrevBest, self.lengthSynthesizedTextBest, weights)
-            print('\n\nEpoch: ' + str(epoch) + ', Lowest smooth loss: ' + str(lowestSmoothLoss))
-            print('    ' + bestSequence)
+                weights = dict(weightsTuples)
+                bestSequence = self.synthesizeText(x0Best, hPrevBest, self.lengthSynthesizedTextBest, weights)
+                print('\n\nEpoch: ' + str(epoch) + ', Lowest smooth loss: ' + str(lowestSmoothLoss))
+                print('    ' + bestSequence)
 
     def forwardProp(self, x, hPrev, weights={}):
         if not weights:
@@ -407,7 +418,6 @@ class RecurrentNeuralNetwork(object):
 def pMatrix(array):
     rows = str(array).replace('[', '').replace(']', '').splitlines()
     rowString = [r'\begin{pmatrix}']
-    # rowString += [r'  \num{' + r'} & \num{'.join(row.split()) + r'}\\' for row in rows]
     for row in rows:
         rowString += [r'  \num{' + r'} & \num{'.join(row.split()) + r'}\\']
 
@@ -419,20 +429,20 @@ def pMatrix(array):
 def main():
 
     attributes = {
-        'textFile': 'LordOfTheRings.txt',
-        'adaGradSGD': True,
-        'clipGradients': True,
-        'weightInit': 'He',
-        'eta': .1,
-        'nHiddenNeurons': 100,
-        'seqLength': 25,
-        'lengthSynthesizedText': 200,
-        'lengthSynthesizedTextBest': 1000,
-        'rmsProp': False,
-        'gamma': 0.9,
-        'nEpochs': 40,
-        'plotProcess': True,
-        'saveParameters': False
+        'textFile': 'LordOfTheRings.txt',  # Name of book text file
+        'adaGradSGD': True,  # Stochastic gradient decent, True for adaGrad, False for regular SGD
+        'clipGradients': True,  # True to avoid exploding gradients
+        'weightInit': 'Load',  # 'He', 'Load' or 'Random'
+        'eta': .1,  # Learning rate
+        'nHiddenNeurons': 100,  # Number of hidden neurons
+        'seqLength': 25,  # Sequence length of each sequence iteration
+        'lengthSynthesizedText': 200,  # Sequence length of each print of text evolution
+        'lengthSynthesizedTextBest': 1000,  # Sequence length of final best sequence (lowest loss), requires saveParameters
+        'rmsProp': False,  # Implementation of rmsProp to adaGradSGD
+        'gamma': 0.9,  # Weight factor of rmsProp
+        'nEpochs': 40,  # Total number of epochs, each epoch corresponds to (n book characters)/(seqLength) seq iterations
+        'plotProcess': True,  # Plot learning curve
+        'saveParameters': True  # Save best weights with corresponding arrays iterations and smooth loss
     }
 
     if not attributes['adaGradSGD']:
