@@ -432,7 +432,7 @@ def main():
         'textFile': 'LordOfTheRings.txt',  # Name of book text file
         'adaGradSGD': True,  # Stochastic gradient decent, True for adaGrad, False for regular SGD
         'clipGradients': True,  # True to avoid exploding gradients
-        'weightInit': 'Load',  # 'He', 'Load' or 'Random'
+        'weightInit': 'He',  # 'He', 'Load' or 'Random'
         'eta': .1,  # Learning rate
         'nHiddenNeurons': 100,  # Number of hidden neurons
         'seqLength': 25,  # Sequence length of each sequence iteration
