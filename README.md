@@ -4,6 +4,7 @@ Vanilla Recurrent Neural Network to synthesize text sentences after training of 
 ![](https://github.com/johndah/Recurrent-Neural-Network/blob/master/Learning%20Curve.png)
 
 Sample of synthezised text:
+
 Sequence iteration: 1591581, Epoch: 39, Smooth loss: 42.37
 
 "Frown
