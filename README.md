@@ -12,6 +12,7 @@ down awar but neat..'
 
 Galfot his from time"
 
+
 Begin training from scrach by entering "He" or "Random" as attribute weightInit, or enter "Load" while ensuring weights are saved (set attribute saveParameters to "True") to begin from trained state.
 
 I uploaded a set of parameters in directory that I trained for 40 epochs (1 772 039 sequence iterations).
