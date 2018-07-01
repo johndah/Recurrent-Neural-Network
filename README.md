@@ -3,7 +3,7 @@ Vanilla Recurrent Neural Network to synthesize text sentences after training of 
 
 
 ## Learning of Lord of the Rings
-I trained the network on the Lord of the Rings book "THE FELLOWSHIP OF THE RING". Here is the result of the learning:
+I trained the network on the Lord of the Rings book "The Fellowship of the Ring":
 
 ![](https://github.com/johndah/Recurrent-Neural-Network/blob/master/Learning%20Curve.png)
 
@@ -17,8 +17,10 @@ Sequence iteration: 1591581, Epoch: 39, Smooth loss: 42.37
 
 	Galfot his from time"
 
+I uploaded a set of parameters in directory that I trained for 40 epochs (1 772 039 sequence iterations).
+
 ## Learning of Python code
-I also wanted to test how well it could learn to write Python code, for this I created a text file with all Python code my Github page to train on, with a sequence length seqLength = 100. Here is the result:
+I also wanted to test how well the network could learn to write Python code, for this I created a text file with all Python code my Github page to train on (as much it may seem, the network would ideally be feeded with way more data to generalize better), with a sequence length seqLength = 100. Here is the result:
 
 ![](https://github.com/johndah/Recurrent-Neural-Network/blob/master/Learning%20Curve%20Python.png)
 
@@ -26,31 +28,25 @@ Sample of synthezised text:
 
 Epoch: 1999, Lowest smooth loss: 69.298
 
-
-	    print('\n'	
-		validm.anarate((self.neur', p[i, :, getattr(self, weight, sequen(sigmaNoise))
+	print('\n'	
+	validm.anarate((self.neur', p[i, :, getattr(self, weight, sequen(sigmaNoise))
 
 	hPrev = self.computeAcs:	
 
-	 # Epoch multiLayerPerceppighnolNuch intseNt arn.f)
-		tol in range(6):
-			print('RBMIn self.plotProwTr' + etcalerataplet itimm.Tration%(self.W[layer-2].T).T
-		self.lmbda):
-		    splotTyre + 0.000)) = earl()
-
-		    ex):
-		self.Xtrais.append('grax}']
-		for i in range(len(self.weights))]
+	# Epoch multiLayerPerceppighnolNuch intseNt arn.f)
+	tol in range(6):
+		print('RBMIn self.plotProwTr' + etcalerataplet itimm.Tration%(self.W[layer-2].T).T
+	self.lmbda):
+	
+	self.Xtrais.append('grax}']
+	for i in range(len(self.weights))]
 		self.X0, fol aur(-10tind)) - X
 
 	def multeile(reck.reshot inpued(dJdW     X itines': 1 = c1) Circliss))
 		self.Ntrain = array(diall)
 		self.X0e-rasedTept(self.iteration = 1 + '\nW ' + 1
 
-
 Begin training from scrach by entering "He" or "Random" as attribute weightInit, or enter "Load" while ensuring weights are saved (set attribute saveParameters to "True") to begin from trained state.
-
-I uploaded a set of parameters in directory that I trained for 40 epochs (1 772 039 sequence iterations).
 
 Fewer hidden neurons will require larger weight init variance (automatically done with He initialization).
 
