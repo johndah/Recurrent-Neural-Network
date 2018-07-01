@@ -1,6 +1,7 @@
-# Recurrent-Neural-Network
+## Recurrent-Neural-Network
 Vanilla Recurrent Neural Network to synthesize text sentences after training of optional text such as books.
 
+# Learning of Lord of the Rings
 ![](https://github.com/johndah/Recurrent-Neural-Network/blob/master/Learning%20Curve.png)
 
 Sample of synthezised text:
@@ -12,6 +13,34 @@ of the San concougly of the wish; it was his masted lon Rif meding? Farser wo ki
 down awar but neat..'
 
 Galfot his from time"
+
+# Learning of Python code
+
+Epoch: 1999, Lowest smooth loss: 69.298
+
+"
+    print('\n'	
+	validm.anarate((self.neur', p[i, :, getattr(self, weight, sequen(sigmaNoise))
+
+hPrev = self.computeAcs:	
+
+ \# Epoch multiLayerPerceppighnolNuch intseNt arn.f)
+        tol in range(6):
+                print('RBMIn self.plotProwTr' + etcalerataplet itimm.Tration%(self.W[layer-2].T).T
+        self.lmbda):
+            splotTyre + 0.000)) = earl()
+
+            ex):
+        self.Xtrais.append('grax}']
+        for i in range(len(self.weights))]
+        self.X0, fol aur(-10tind)) - X
+
+def multeile(reck.reshot inpued(dJdW     X itines': 1 = c1) Circliss))
+        self.Ntrain = array(diall)
+        self.X0e-rasedTept(self.iteration = 1 + '\nW ' + 1
+
+"
+
 
 
 Begin training from scrach by entering "He" or "Random" as attribute weightInit, or enter "Load" while ensuring weights are saved (set attribute saveParameters to "True") to begin from trained state.
