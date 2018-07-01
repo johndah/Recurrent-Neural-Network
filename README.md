@@ -32,7 +32,7 @@ Epoch: 1999, Lowest smooth loss: 69.298
 
 	hPrev = self.computeAcs:	
 
-	 \# Epoch multiLayerPerceppighnolNuch intseNt arn.f)
+	 # Epoch multiLayerPerceppighnolNuch intseNt arn.f)
 		tol in range(6):
 			print('RBMIn self.plotProwTr' + etcalerataplet itimm.Tration%(self.W[layer-2].T).T
 		self.lmbda):
