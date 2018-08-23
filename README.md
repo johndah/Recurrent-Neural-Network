@@ -20,7 +20,7 @@ Sequence iteration: 1591581, Epoch: 39, Smooth loss: 42.37
 I uploaded a set of parameters in directory that I trained for 40 epochs (1 772 039 sequence iterations).
 
 ## Learning of Python code
-I also wanted to test how well the network could learn to write Python code, for this I created a text file with all Python code my Github page to train on (as much it may seem, the network would ideally be feeded with way more data to generalize better), with a sequence length seqLength = 100. Here is the result:
+I also wanted to test how well the network could learn to write Python code, for this I created a text file including all Python code from my Github repositories to train on (as much it may seem, the network would ideally be feeded with way more data to generalize better), with a sequence length seqLength = 100. Here is the result:
 
 ![](https://github.com/johndah/Recurrent-Neural-Network/blob/master/Learning%20Curve%20Python.png)
 
@@ -48,6 +48,7 @@ Epoch: 1999, Lowest smooth loss: 69.298
 
 Begin training from scrach by entering "He" or "Random" as attribute weightInit, or enter "Load" while ensuring weights are saved (set attribute saveParameters to "True") to begin from trained state.
 
+## Tips for use
 Fewer hidden neurons will require larger weight init variance (automatically done with He initialization).
 
 Be careful with activating rmsProp as gradients may expload, good values for <a href="https://www.codecogs.com/eqnedit.php?latex=\gamma,&space;\eta" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\gamma,&space;\eta" title="\gamma, \eta" /></a>
