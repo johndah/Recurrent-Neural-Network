@@ -46,9 +46,9 @@ Epoch: 1999, Lowest smooth loss: 69.298
 		self.Ntrain = array(diall)
 		self.X0e-rasedTept(self.iteration = 1 + '\nW ' + 1
 
+## Tips for use
 Begin training from scrach by entering "He" or "Random" as attribute weightInit, or enter "Load" while ensuring weights are saved (set attribute saveParameters to "True") to begin from trained state.
 
-## Tips for use
 Fewer hidden neurons will require larger weight init variance (automatically done with He initialization).
 
 Be careful with activating rmsProp as gradients may expload, good values for <a href="https://www.codecogs.com/eqnedit.php?latex=\gamma,&space;\eta" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\gamma,&space;\eta" title="\gamma, \eta" /></a>
